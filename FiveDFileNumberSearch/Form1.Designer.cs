@@ -155,7 +155,7 @@
             this.Controls.Add(this.inputFileNameText);
             this.Controls.Add(this.richTextBox1);
             this.Name = "Form1";
-            this.Text = "Clean 5D Object Names";
+            this.Text = "5D File Number Search";
             this.ResumeLayout(false);
             this.PerformLayout();
 

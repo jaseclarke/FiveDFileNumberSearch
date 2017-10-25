@@ -370,7 +370,7 @@ namespace FiveDFileNumberSearch
 
                 using (var cmd = new SQLiteCommand(conn))
                 {
-                    cmd.CommandText = "SELECT * FROM [PlanVersions]  WHERE [WellID]=$wellID ORDER BY [CreationDate] DESC";
+                    cmd.CommandText = "SELECT * FROM [PlanVersions]  WHERE [WellID]=$wellID ORDER BY [CreationDate] DESC, [VersionName] DESC ";
                     cmd.Parameters.AddWithValue("$wellID", wellID);
 
                     using (var rdr = cmd.ExecuteReader())

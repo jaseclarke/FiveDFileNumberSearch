@@ -14,11 +14,11 @@ namespace FiveDFileNumberSearch
 
         private string InputFileName { get; set; }
 
-        private FieldParser _parser = null;
+        private FieldParser _parser;
 
-        private ModelInfo _modelInfo = null;
+        private ModelInfo _modelInfo;
 
-        private DatabaseHelper _dbHelper = new DatabaseHelper(@"C:\Temp\modeldb.sqlite");
+        private readonly DatabaseHelper _dbHelper = new DatabaseHelper(@"C:\Temp\modeldb.sqlite");
 
         public struct ChangeMessage
         {
@@ -72,15 +72,15 @@ namespace FiveDFileNumberSearch
 
         private void ProcessArchive(object sender, DoWorkEventArgs e)
         {
-            ProcessArchive();
+            ProcessArchive(InputFileName);
         }
 
-        public void ProcessArchive()
+        public void ProcessArchive(string inputFilePath)
         {
-            using (FiveDZipFileHandler opener = new FiveDZipFileHandler(InputFileName))
+            using (FiveDZipFileHandler opener = new FiveDZipFileHandler(inputFilePath))
             {
                 _parser = new FieldParser(opener.FieldXmlFileName);
-                _modelInfo = new ModelInfo {ModelPath = InputFileName};
+                _modelInfo = new ModelInfo {ModelPath = inputFilePath };
                 _dbHelper.UpdateModel(_modelInfo,_parser);
             }
         }
@@ -158,9 +158,6 @@ namespace FiveDFileNumberSearch
         private void showFileNumbersBtn_Click(object sender, EventArgs e)
         {
             richTextBox1.Clear();
-            //List<string> fileNumbers = _parser.AllWellInfo.Where(wi => wi.FileNumber != string.Empty)
-            //    .Select(wi => wi.FileNumber.Trim()).ToList();
-            //fileNumbers.Sort();
             foreach (string fn in _dbHelper.AllKnownFileNumbers())
             {
                 PrintInfo(fn);
@@ -178,14 +175,6 @@ namespace FiveDFileNumberSearch
                 PrintModellInfo(record.ModelRecord);
                 PrintWellInfo(record.WellInfo);
             }
-            //string searchText = fileNumberTB.Text.Trim().ToLower();
-            //foreach (var wi in _parser.AllWellInfo)
-            //{
-            //    if (wi.FileNumber.ToLower().Contains(searchText))
-            //    {
-            //        PrintWellInfo(wi);
-            //    }
-            //}
         }
 
         private void PrintModellInfo(ModelRecord mr)
@@ -201,7 +190,15 @@ namespace FiveDFileNumberSearch
 
         private void button1_Click(object sender, EventArgs e)
         {
-            var lud = _dbHelper.GetLastUpdateTime();
+            FiveDFileHelper helper = new FiveDFileHelper(@"E:\5dData\CanadaTest");
+
+            richTextBox1.Clear();
+
+            foreach (var fiveDFile in helper.ChangedFiles(_dbHelper))
+            {
+                PrintInfo(fiveDFile);
+                ProcessArchive(fiveDFile);
+            }
         }
     }
 
