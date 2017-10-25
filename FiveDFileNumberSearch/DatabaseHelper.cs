@@ -42,6 +42,7 @@ namespace FiveDFileNumberSearch
             if (!File.Exists(_dbFilePath))
             {
                 CreateDatabase();
+                SetLastUpdatedTime();
             }
         }
 
@@ -64,6 +65,50 @@ namespace FiveDFileNumberSearch
                 }
             }
         }
+
+        public void SetRootFolder(string rootFolder)
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+
+                using (var cmd = new SQLiteCommand(conn))
+                {
+                    cmd.CommandText = "REPLACE INTO [Settings] VALUES (NULL,$key,$value)";
+
+                    cmd.Parameters.AddWithValue("$key", "RootFolder");
+                    cmd.Parameters.AddWithValue("$value", rootFolder);
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public string GetRootFolder()
+        {
+            string rootFolder = string.Empty;
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+
+                using (var cmd = new SQLiteCommand(conn))
+                {
+                    cmd.CommandText = "SELECT * FROM [Settings] WHERE [Key]=$key";
+
+                    cmd.Parameters.AddWithValue("$key", "RootFolder");
+
+                    using (var rdr = cmd.ExecuteReader())
+                    {
+                        if (rdr.Read())
+                        {
+                            rootFolder = rdr["Value"].ToString();
+                        }
+                    }
+                }
+            }
+            return rootFolder;
+        }
+
 
         public ModelRecord GetModelByPath(ModelInfo info)
         {
@@ -187,7 +232,7 @@ namespace FiveDFileNumberSearch
             var records = new List<FileNumberRecord>();
             foreach (string fn in AllKnownFileNumbers())
             {
-                if (fn.Contains(fileNumber))
+                if (fn.ToLower().Contains(fileNumber.ToLower()))
                 {
                     foreach (var wr in GetWellDataByFileNumber(fn))
                     {

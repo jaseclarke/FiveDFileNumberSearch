@@ -18,7 +18,8 @@ namespace FiveDFileNumberSearch
 
         private ModelInfo _modelInfo;
 
-        private readonly DatabaseHelper _dbHelper = new DatabaseHelper(@"C:\Temp\modeldb.sqlite");
+        private DatabaseHelper _dbHelper = null;
+        private string _dbPath;
 
         public struct ChangeMessage
         {
@@ -43,14 +44,15 @@ namespace FiveDFileNumberSearch
             }
 
             searchFNBtn.Enabled = false;
+            SetFormState();
         }
 
         private void ProcesssingComplete(object sender, RunWorkerCompletedEventArgs e)
         {
-            DoUpdate.Enabled = true;
-            DoUpdate.Text = "Load Model";
-            richTextBox1.Clear();
-            ShowAllInfo();
+            //DoUpdate.Enabled = true;
+            //DoUpdate.Text = "Load Model";
+            //richTextBox1.Clear();
+            //ShowAllInfo();
         }
 
         private void ProcessArchiveProgressMessage(object sender, ProgressChangedEventArgs e)
@@ -118,35 +120,46 @@ namespace FiveDFileNumberSearch
             }
         }
 
+        private void SetFormState()
+        {
+            bool dbLoaded = _dbHelper != null;
+            bool rootFolderExists = dbLoaded && Directory.Exists(_dbHelper.GetRootFolder());
+
+            setRootFolderBtn.Enabled = dbLoaded;
+            ProcessChangesBtn.Enabled = rootFolderExists;
+            showFileNumbersBtn.Enabled = dbLoaded;
+            fileNumberTB.Enabled = dbLoaded;
+            exportDatabaseToolStripMenuItem.Enabled = dbLoaded;
+        }
+
         private void chooseInputFile_Click(object sender, EventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog
+            var fbd = new FolderBrowserDialog
             {
-                Filter = "5D Files|*.5dz|All Files|*.*",
-                Title = "Choose 5D Input File"
+                Description = "Select the root folder for 5D file search.",
+                ShowNewFolderButton = true
             };
 
-            if (ofd.ShowDialog() == DialogResult.OK)
+            if (fbd.ShowDialog() == DialogResult.OK)
             {
-                inputFileNameText.Text = ofd.FileName;
+                rootFolderText.Text = fbd.SelectedPath;
             }
         }
 
-
         private void DoUpdate_Click(object sender, EventArgs e)
         {
-            InputFileName = inputFileNameText.Text;
+            //InputFileName = rootFolderText.Text;
 
-            if (!File.Exists(inputFileNameText.Text))
-            {
-                MessageBox.Show($"The Input File {InputFileName} must exist.");
-                return;
-            }
+            //if (!File.Exists(rootFolderText.Text))
+            //{
+            //    MessageBox.Show($"The Input File {InputFileName} must exist.");
+            //    return;
+            //}
 
-            DoUpdate.Enabled = false;
-            DoUpdate.Text = "Processing";
-            richTextBox1.Clear();
-            _bw.RunWorkerAsync();
+            //DoUpdate.Enabled = false;
+            //DoUpdate.Text = "Processing";
+            //richTextBox1.Clear();
+            //_bw.RunWorkerAsync();
         }
 
         private void showAllBtn_Click(object sender, EventArgs e)
@@ -190,14 +203,122 @@ namespace FiveDFileNumberSearch
 
         private void button1_Click(object sender, EventArgs e)
         {
-            FiveDFileHelper helper = new FiveDFileHelper(@"E:\5dData\CanadaTest");
+            FiveDFileHelper helper = new FiveDFileHelper(_dbHelper.GetRootFolder());
 
             richTextBox1.Clear();
-
-            foreach (var fiveDFile in helper.ChangedFiles(_dbHelper))
+            var changedFiles = helper.ChangedFiles(_dbHelper);
+            if (changedFiles.Count > 0)
             {
-                PrintInfo(fiveDFile);
-                ProcessArchive(fiveDFile);
+                foreach (var fiveDFile in changedFiles)
+                {
+                    PrintInfo(fiveDFile);
+                    ProcessArchive(fiveDFile);
+                }
+            }
+            else
+            {
+                PrintInfo("No Changes Found.");
+            }
+            SetDatabaseStatusMessage();
+        }
+
+        private void newDatabaseToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var sfd = new SaveFileDialog
+            {
+                Filter = "5D Model Database (*.db)|*.db|All Files (*.*)|*.*",
+                OverwritePrompt = true
+            };
+
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                if (File.Exists(sfd.FileName))
+                {
+                    File.Delete(sfd.FileName);
+                }
+                _dbPath = sfd.FileName;
+                _dbHelper = new DatabaseHelper(sfd.FileName);
+                rootFolderText.Text = _dbHelper.GetRootFolder();
+                SetDatabaseStatusMessage();
+                SetFormState();
+            }
+        }
+
+        void SetDatabaseStatusMessage()
+        {
+            if (_dbHelper == null)
+            {
+                DatabaseStatusText.Text = "Database Loaded: None";
+            }
+            else
+            {
+                DatabaseStatusText.Text =
+                    $"Database Loaded: {_dbPath}, Last Modified: {_dbHelper.GetLastUpdateTime():G}";
+            }
+        }
+
+        private void openDatabaseToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var ofd = new OpenFileDialog
+            {
+                Filter = "5D Model Database (*.db)|*.db|All Files (*.*)|*.*",
+                CheckPathExists = true
+            };
+
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                _dbPath = ofd.FileName;
+                _dbHelper = new DatabaseHelper(ofd.FileName);
+                rootFolderText.Text = _dbHelper.GetRootFolder();
+                SetDatabaseStatusMessage();
+                PrintModelHistory();
+                SetFormState();
+            }
+        }
+
+        private void PrintModelHistory()
+        {
+            richTextBox1.Clear();
+            PrintInfo("Loaded 5D Files:");
+
+            foreach (var mr in _dbHelper.GetAllModelDataRecords())
+            {
+                PrintInfo($"File: {mr.ModelPath}, Last Updated: {mr.LastUpdated:G}");
+            }
+        }
+
+        private void SetRootFolderBtnClick(object sender, EventArgs e)
+        {
+            if (!Directory.Exists(rootFolderText.Text))
+            {
+                MessageBox.Show("Root Folder must be a valid directory.");
+                return;
+            }
+
+            _dbHelper.SetRootFolder(rootFolderText.Text);
+            rootFolderText.Text = _dbHelper.GetRootFolder();
+            SetDatabaseStatusMessage();
+            SetFormState();
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void exportDatabaseToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var sfd = new SaveFileDialog
+            {
+                Filter = "5D Model Database (*.db)|*.db|All Files (*.*)|*.*",
+                OverwritePrompt = true
+            };
+
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                File.Copy(_dbPath, sfd.FileName);
+                richTextBox1.Clear();
+                PrintInfo($"Database Saved to {sfd.FileName}");
             }
         }
     }
