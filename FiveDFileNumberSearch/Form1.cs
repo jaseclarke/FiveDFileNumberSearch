@@ -81,6 +81,7 @@ namespace FiveDFileNumberSearch
         {
             using (FiveDZipFileHandler opener = new FiveDZipFileHandler(inputFilePath))
             {
+                if (string.IsNullOrWhiteSpace(opener.FieldXmlFileName)) return;
                 _parser = new FieldParser(opener.FieldXmlFileName);
                 _modelInfo = new ModelInfo {ModelPath = inputFilePath };
                 _dbHelper.UpdateModel(_modelInfo,_parser);

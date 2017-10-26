@@ -14,6 +14,10 @@ namespace FiveDFileNumberSearch
                 throw new FileNotFoundException("5D Model Not Found",ModelFilePath);
             }
             ExtractArchive();
+            if (!File.Exists(FieldXmlFileName))
+            {
+                FieldXmlFileName = string.Empty;
+            }
         }
 
         public string FieldXmlFileName { get; set; }
@@ -32,14 +36,14 @@ namespace FiveDFileNumberSearch
                 using (ZipArchive inputZip = ZipFile.Open(ModelFilePath, ZipArchiveMode.Read))
                 {
                     var entry = inputZip.GetEntry("Field.xml");
-                    entry.ExtractToFile(FieldXmlFileName);
+                    entry?.ExtractToFile(FieldXmlFileName);
                 }
             }
         }
 
         public void Dispose()
         {
-            if (File.Exists(FieldXmlFileName))
+            if (!string.IsNullOrWhiteSpace(FieldXmlFileName) && File.Exists(FieldXmlFileName))
             {
                 File.Delete(FieldXmlFileName);
             }

@@ -26,6 +26,17 @@ namespace FiveDFileNumberSearch
             return fiveDFiles;
         }
 
+        public static bool IsNetworkPath(string filePath)
+        {
+            bool isNetworkPath = new Uri(filePath).IsUnc;
+            if (!isNetworkPath)
+            {
+                DriveInfo drive = new DriveInfo(Path.GetPathRoot(filePath));
+                isNetworkPath = drive.DriveType == DriveType.Network;
+            }
+            return isNetworkPath;
+        }
+
         public List<string> ChangedFiles(DatabaseHelper dbHelper)
         {
             var changedFiles = new List<string>();
