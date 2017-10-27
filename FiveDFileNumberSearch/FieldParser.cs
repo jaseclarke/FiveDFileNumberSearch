@@ -24,6 +24,7 @@ namespace FiveDFileNumberSearch
         public string PlanName { get; set; }
         public string VersionName { get; set; }
         public DateTime CreationDate { get; set; }
+        public string Comment { get; set; }
 
         public bool IsDefinitivePlan { get; set; }
 
@@ -97,6 +98,7 @@ namespace FiveDFileNumberSearch
                         {
                             PlanName = planName,
                             VersionName = rdr.GetAttribute("versionName"),
+                            Comment = rdr.GetAttribute("comment"),
                             IsCurrentPlan = false
                         };
 

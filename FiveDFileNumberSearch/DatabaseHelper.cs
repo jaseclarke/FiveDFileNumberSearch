@@ -346,12 +346,13 @@ namespace FiveDFileNumberSearch
                 cmd.Transaction = txn;
                 foreach (var pvi in wi.PlanVersionList)
                 {
-                    cmd.CommandText = "INSERT INTO [PlanVersions] VALUES (NULL, $modelID, $wellID, $planName, $versionName, $creationDate, $isDefinitive, $isCurrent)";
+                    cmd.CommandText = "INSERT INTO [PlanVersions] VALUES (NULL, $modelID, $wellID, $planName, $versionName, $comment, $creationDate, $isDefinitive, $isCurrent)";
 
                     cmd.Parameters.AddWithValue("$modelID", record.ID);
                     cmd.Parameters.AddWithValue("$wellID", wellID);
                     cmd.Parameters.AddWithValue("$planName", pvi.PlanName);
                     cmd.Parameters.AddWithValue("$versionName", pvi.VersionName);
+                    cmd.Parameters.AddWithValue("$comment", pvi.Comment);
                     cmd.Parameters.AddWithValue("$creationDate", pvi.CreationDate);
                     cmd.Parameters.AddWithValue("$isDefinitive", pvi.IsDefinitivePlan ? 1 : 0);
                     cmd.Parameters.AddWithValue("$isCurrent", pvi.IsCurrentPlan ? 1 : 0);
@@ -426,6 +427,7 @@ namespace FiveDFileNumberSearch
                             {
                                 PlanName = rdr["PlanName"].ToString(),
                                 VersionName = rdr["VersionName"].ToString(),
+                                Comment = rdr["Comment"].ToString(),
                                 CreationDate = DateTime.Parse(rdr["CreationDate"].ToString()),
                                 IsCurrentPlan = Convert.ToInt32(rdr["IsCurrent"]) != 0,
                                 IsDefinitivePlan = Convert.ToInt32(rdr["IsDefinitive"]) != 0
@@ -525,6 +527,7 @@ namespace FiveDFileNumberSearch
                                                           [WellID] INTEGER NOT NULL,
                                                           [PlanName] VARCHAR(2048) NOT NULL,
                                                           [VersionName] VARCHAR(2048) NOT NULL,
+                                                          [Comment] TEXT,
                                                           [CreationDate] DATETIME, 
                                                           [IsDefinitive] INTEGER NOT NULL DEFAULT 0, 
                                                           [IsCurrent] INTEGER NOT NULL DEFAULT 0 

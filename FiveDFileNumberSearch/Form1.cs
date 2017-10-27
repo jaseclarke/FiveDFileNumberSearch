@@ -12,13 +12,11 @@ namespace FiveDFileNumberSearch
     {
         private readonly BackgroundWorker _bw = new BackgroundWorker();
 
-        private string InputFileName { get; set; }
-
         private FieldParser _parser;
 
         private ModelInfo _modelInfo;
 
-        private DatabaseHelper _dbHelper = null;
+        private DatabaseHelper _dbHelper;
         private string _dbPath;
 
         public struct ChangeMessage
@@ -49,10 +47,9 @@ namespace FiveDFileNumberSearch
 
         private void ProcesssingComplete(object sender, RunWorkerCompletedEventArgs e)
         {
-            //DoUpdate.Enabled = true;
-            //DoUpdate.Text = "Load Model";
-            //richTextBox1.Clear();
-            //ShowAllInfo();
+            ProcessChangesBtn.Enabled = true;
+            ProcessChangesBtn.Text = "Process Changed Files";
+            SetDatabaseStatusMessage();
         }
 
         private void ProcessArchiveProgressMessage(object sender, ProgressChangedEventArgs e)
@@ -69,30 +66,64 @@ namespace FiveDFileNumberSearch
 
         private void PrintInfo(string message)
         {
-            richTextBox1.AppendText(message + Environment.NewLine);
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => PrintInfo(message)));
+            }
+            else
+            {
+                richTextBox1.AppendText(message + Environment.NewLine);
+            }
         }
 
         private void ProcessArchive(object sender, DoWorkEventArgs e)
         {
-            ProcessArchive(InputFileName);
+            FiveDFileHelper helper = new FiveDFileHelper(_dbHelper.GetRootFolder());
+
+            var changedFiles = helper.ChangedFiles(_dbHelper);
+            if (changedFiles.Count > 0)
+            {
+                foreach (var fiveDFile in changedFiles)
+                {
+                    bool isNetworkFile = false;
+                    string tempFile = string.Empty;
+                    try
+                    {
+                        if (FiveDFileHelper.IsNetworkPath(fiveDFile))
+                        {
+                            tempFile = Path.GetTempFileName();
+                            PrintInfo($"Making Local Copy of {fiveDFile}");
+                            File.Copy(fiveDFile, tempFile,true);
+                            File.SetAttributes(tempFile, ~FileAttributes.ReadOnly);
+                            isNetworkFile = true;
+                        }
+                        PrintInfo($"Processing {fiveDFile}");
+                        ProcessArchive(fiveDFile,tempFile);
+                    }
+                    finally
+                    {
+                        if (isNetworkFile && File.Exists(tempFile))
+                        {
+                            File.Delete(tempFile);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                PrintInfo("No Changes Found.");
+            }
         }
 
-        public void ProcessArchive(string inputFilePath)
+        public void ProcessArchive(string inputFilePath, string tempCopyFileName)
         {
-            using (FiveDZipFileHandler opener = new FiveDZipFileHandler(inputFilePath))
+            string archiveFile = string.IsNullOrWhiteSpace(tempCopyFileName) ? inputFilePath : tempCopyFileName;
+            using (FiveDZipFileHandler opener = new FiveDZipFileHandler(archiveFile))
             {
                 if (string.IsNullOrWhiteSpace(opener.FieldXmlFileName)) return;
                 _parser = new FieldParser(opener.FieldXmlFileName);
                 _modelInfo = new ModelInfo {ModelPath = inputFilePath };
                 _dbHelper.UpdateModel(_modelInfo,_parser);
-            }
-        }
-
-        private void ShowAllInfo()
-        {
-            foreach (var wi in _parser.AllWellInfo)
-            {
-                PrintWellInfo(wi);
             }
         }
 
@@ -107,7 +138,7 @@ namespace FiveDFileNumberSearch
             foreach (var pvi in wi.PlanVersionList)
             {
                 var planText =
-                    $"\tPlan: {pvi.PlanName}, Version: {pvi.VersionName}, Date: {pvi.CreationDate.ToShortDateString()}";
+                    $"\tPlan: {pvi.PlanName}, Version: {pvi.VersionName}, Date: {pvi.CreationDate.ToShortDateString()}, {ReplaceNewlines(pvi.Comment," ")}";
 
                 if (pvi.IsDefinitivePlan)
                 {
@@ -147,28 +178,6 @@ namespace FiveDFileNumberSearch
             }
         }
 
-        private void DoUpdate_Click(object sender, EventArgs e)
-        {
-            //InputFileName = rootFolderText.Text;
-
-            //if (!File.Exists(rootFolderText.Text))
-            //{
-            //    MessageBox.Show($"The Input File {InputFileName} must exist.");
-            //    return;
-            //}
-
-            //DoUpdate.Enabled = false;
-            //DoUpdate.Text = "Processing";
-            //richTextBox1.Clear();
-            //_bw.RunWorkerAsync();
-        }
-
-        private void showAllBtn_Click(object sender, EventArgs e)
-        {
-            richTextBox1.Clear();
-            ShowAllInfo();
-        }
-
         private void showFileNumbersBtn_Click(object sender, EventArgs e)
         {
             richTextBox1.Clear();
@@ -204,23 +213,10 @@ namespace FiveDFileNumberSearch
 
         private void button1_Click(object sender, EventArgs e)
         {
-            FiveDFileHelper helper = new FiveDFileHelper(_dbHelper.GetRootFolder());
-
+            ProcessChangesBtn.Enabled = false;
+            ProcessChangesBtn.Text = "Processing";
             richTextBox1.Clear();
-            var changedFiles = helper.ChangedFiles(_dbHelper);
-            if (changedFiles.Count > 0)
-            {
-                foreach (var fiveDFile in changedFiles)
-                {
-                    PrintInfo(fiveDFile);
-                    ProcessArchive(fiveDFile);
-                }
-            }
-            else
-            {
-                PrintInfo("No Changes Found.");
-            }
-            SetDatabaseStatusMessage();
+            _bw.RunWorkerAsync();
         }
 
         private void newDatabaseToolStripMenuItem_Click(object sender, EventArgs e)
@@ -321,6 +317,11 @@ namespace FiveDFileNumberSearch
                 richTextBox1.Clear();
                 PrintInfo($"Database Saved to {sfd.FileName}");
             }
+        }
+
+        string ReplaceNewlines(string blockOfText, string replaceWith)
+        {
+            return blockOfText.Replace("\r\n", replaceWith).Replace("\n", replaceWith).Replace("\r", replaceWith);
         }
     }
 
