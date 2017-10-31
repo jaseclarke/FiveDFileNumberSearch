@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.27004.2002
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FiveDFileNumberSearch", "FiveDFileNumberSearch\FiveDFileNumberSearch.csproj", "{71996B7B-8568-40E3-A11E-F7BA8CB094E5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FiveDFileNumberSearchLib", "FiveDFileNumberSearchLib\FiveDFileNumberSearchLib.csproj", "{3768C395-BC14-45E1-BCA1-C543C0AFA9CD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{71996B7B-8568-40E3-A11E-F7BA8CB094E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{71996B7B-8568-40E3-A11E-F7BA8CB094E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{71996B7B-8568-40E3-A11E-F7BA8CB094E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3768C395-BC14-45E1-BCA1-C543C0AFA9CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3768C395-BC14-45E1-BCA1-C543C0AFA9CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3768C395-BC14-45E1-BCA1-C543C0AFA9CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3768C395-BC14-45E1-BCA1-C543C0AFA9CD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

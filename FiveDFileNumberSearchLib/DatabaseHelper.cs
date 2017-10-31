@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
 
-namespace FiveDFileNumberSearch
+namespace FiveDFileNumberSearchLib
 {
     public class FileNumberRecord
     {
@@ -275,17 +275,24 @@ namespace FiveDFileNumberSearch
             {
                 conn.Open();
 
-                using (var cmd = new SQLiteCommand(conn))
+                using (var txn = conn.BeginTransaction())
                 {
-                    cmd.CommandText = "DELETE FROM [Wells] WHERE [ModelID] = $modelID";
+                    using (var cmd = new SQLiteCommand(conn))
+                    {
+                        cmd.Transaction = txn;
 
-                    cmd.Parameters.AddWithValue("$modelID", modelID);
-                    cmd.ExecuteNonQuery();
+                        cmd.CommandText = "DELETE FROM [Wells] WHERE [ModelID] = $modelID";
 
-                    cmd.CommandText = "DELETE FROM [PlanVersions] WHERE [ModelID] = $modelID";
+                        cmd.Parameters.AddWithValue("$modelID", modelID);
+                        cmd.ExecuteNonQuery();
 
-                    cmd.Parameters.AddWithValue("$modelID", modelID);
-                    cmd.ExecuteNonQuery();
+                        cmd.CommandText = "DELETE FROM [PlanVersions] WHERE [ModelID] = $modelID";
+
+                        cmd.Parameters.AddWithValue("$modelID", modelID);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    txn.Commit();
                 }
             }
         }

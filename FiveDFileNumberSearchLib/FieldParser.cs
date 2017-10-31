@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Xml;
 
-namespace FiveDFileNumberSearch
+namespace FiveDFileNumberSearchLib
 {
     public class WellInfo
     {
@@ -17,6 +18,20 @@ namespace FiveDFileNumberSearch
         public WellInfo ParentWell { get; set; }
 
         public List<PlanVersionInfo> PlanVersionList { get; set; }
+    }
+
+    public class ModelInfo
+    {
+        public string ModelPath { get; set; }
+
+        public DateTime LastModified()
+        {
+            if (File.Exists(ModelPath))
+            {
+                return File.GetLastWriteTime(ModelPath);
+            }
+            return DateTime.MinValue;
+        }
     }
 
     public class PlanVersionInfo

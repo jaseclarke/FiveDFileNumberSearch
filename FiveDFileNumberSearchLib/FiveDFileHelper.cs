@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace FiveDFileNumberSearch
+namespace FiveDFileNumberSearchLib
 {
     public class FiveDFileHelper
     {

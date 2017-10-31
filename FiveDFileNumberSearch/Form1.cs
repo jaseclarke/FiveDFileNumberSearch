@@ -1,9 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Data.SQLite;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using FiveDFileNumberSearchLib;
 
 namespace FiveDFileNumberSearch
 {
@@ -34,12 +34,6 @@ namespace FiveDFileNumberSearch
             _bw.ProgressChanged += ProcessArchiveProgressMessage;
             _bw.WorkerReportsProgress = true;
             _bw.RunWorkerCompleted += ProcesssingComplete;
-
-            var dbFile = @"c:\temp\db.sqlite";
-            if (!File.Exists(dbFile))
-            {
-                SQLiteConnection.CreateFile(dbFile);
-            }
 
             searchFNBtn.Enabled = false;
             SetFormState();
@@ -338,17 +332,4 @@ namespace FiveDFileNumberSearch
         }
     }
 
-    public class ModelInfo
-    {
-        public string ModelPath { get; set; }
-
-        public DateTime LastModified()
-        {
-            if (File.Exists(ModelPath))
-            {
-                return File.GetLastWriteTime(ModelPath);
-            }
-            return DateTime.MinValue;
-        }
-    }
 }

@@ -2,7 +2,7 @@
 using System.IO;
 using System.IO.Compression;
 
-namespace FiveDFileNumberSearch
+namespace FiveDFileNumberSearchLib
 {
     public class FiveDZipFileHandler : IDisposable
     {
