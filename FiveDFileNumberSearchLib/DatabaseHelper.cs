@@ -50,7 +50,7 @@ namespace FiveDFileNumberSearchLib
 
         private void SetLastUpdatedTime()
         {
-            using (var conn = new SQLiteConnection(ConnectionString))
+            using (var conn = new SQLiteConnection(ConnectionString,true))
             {
                 conn.Open();
 
@@ -68,7 +68,7 @@ namespace FiveDFileNumberSearchLib
 
         public void SetRootFolder(string rootFolder)
         {
-            using (var conn = new SQLiteConnection(ConnectionString))
+            using (var conn = new SQLiteConnection(ConnectionString,true))
             {
                 conn.Open();
 
@@ -87,7 +87,7 @@ namespace FiveDFileNumberSearchLib
         public string GetRootFolder()
         {
             string rootFolder = string.Empty;
-            using (var conn = new SQLiteConnection(ConnectionString))
+            using (var conn = new SQLiteConnection(ConnectionString,true))
             {
                 conn.Open();
 
@@ -113,7 +113,7 @@ namespace FiveDFileNumberSearchLib
         public ModelRecord GetModelByPath(ModelInfo info)
         {
             ModelRecord record = null;
-            using (var conn = new SQLiteConnection(ConnectionString))
+            using (var conn = new SQLiteConnection(ConnectionString,true))
             {
                 conn.Open();
 
@@ -143,7 +143,7 @@ namespace FiveDFileNumberSearchLib
         public ModelRecord GetModelByID(int modelID)
         {
             ModelRecord record = null;
-            using (var conn = new SQLiteConnection(ConnectionString))
+            using (var conn = new SQLiteConnection(ConnectionString,true))
             {
                 conn.Open();
 
@@ -174,7 +174,7 @@ namespace FiveDFileNumberSearchLib
         public List<ModelRecord> GetAllModelDataRecords()
         {
             var recordList = new List<ModelRecord>();
-            using (var conn = new SQLiteConnection(ConnectionString))
+            using (var conn = new SQLiteConnection(ConnectionString,true))
             {
                 conn.Open();
 
@@ -203,7 +203,7 @@ namespace FiveDFileNumberSearchLib
         public List<string> AllKnownFileNumbers()
         {
             var fileNumbers = new List<string>();
-            using (var conn = new SQLiteConnection(ConnectionString))
+            using (var conn = new SQLiteConnection(ConnectionString,true))
             {
                 conn.Open();
 
@@ -271,7 +271,7 @@ namespace FiveDFileNumberSearchLib
 
         private void ClearModelData(int modelID)
         {
-            using (var conn = new SQLiteConnection(ConnectionString))
+            using (var conn = new SQLiteConnection(ConnectionString,true))
             {
                 conn.Open();
 
@@ -299,7 +299,7 @@ namespace FiveDFileNumberSearchLib
 
         private void UpdateModelTable(ModelInfo info)
         {
-            using (var conn = new SQLiteConnection(ConnectionString))
+            using (var conn = new SQLiteConnection(ConnectionString,true))
             {
                 conn.Open();
 
@@ -317,7 +317,7 @@ namespace FiveDFileNumberSearchLib
 
         private void AddWellData(ModelRecord record, FieldParser parser)
         {
-            using (var conn = new SQLiteConnection(ConnectionString))
+            using (var conn = new SQLiteConnection(ConnectionString,true))
             {
                 conn.Open();
                 using (var txn = conn.BeginTransaction())
@@ -392,7 +392,7 @@ namespace FiveDFileNumberSearchLib
         public DateTime GetLastUpdateTime()
         {
             DateTime lastUpdateTime = DateTime.MinValue;
-            using (var conn = new SQLiteConnection(ConnectionString))
+            using (var conn = new SQLiteConnection(ConnectionString,true))
             {
                 conn.Open();
 
@@ -417,7 +417,7 @@ namespace FiveDFileNumberSearchLib
         private List<PlanVersionInfo> GetPlanDataByWellID(int wellID)
         {
             var recordList = new List<PlanVersionInfo>();
-            using (var conn = new SQLiteConnection(ConnectionString))
+            using (var conn = new SQLiteConnection(ConnectionString,true))
             {
                 conn.Open();
 
@@ -451,7 +451,7 @@ namespace FiveDFileNumberSearchLib
         private List<WellRecord> GetWellDataByFileNumber(string fileNumber)
         {
             var recordList = new List<WellRecord>();
-            using (var conn = new SQLiteConnection(ConnectionString))
+            using (var conn = new SQLiteConnection(ConnectionString,true))
             {
                 conn.Open();
 
@@ -483,7 +483,7 @@ namespace FiveDFileNumberSearchLib
         {
             SQLiteConnection.CreateFile(_dbFilePath);
 
-            using (var conn = new SQLiteConnection(ConnectionString))
+            using (var conn = new SQLiteConnection(ConnectionString,true))
             {
                 conn.Open();
 

@@ -19,6 +19,8 @@ namespace FiveDFileNumberSearch
         private DatabaseHelper _dbHelper;
         private string _dbPath;
 
+        private bool _adminMode;
+
         public struct ChangeMessage
         {
             public string Message { get; set; }
@@ -29,6 +31,8 @@ namespace FiveDFileNumberSearch
         public Form1()
         {
             InitializeComponent();
+
+            _adminMode = bool.Parse(System.Configuration.ConfigurationManager.AppSettings["AdminMode"]);
 
             _bw.DoWork += ProcessArchive;
             _bw.ProgressChanged += ProcessArchiveProgressMessage;
