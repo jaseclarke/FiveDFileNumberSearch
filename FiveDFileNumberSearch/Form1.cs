@@ -41,6 +41,7 @@ namespace FiveDFileNumberSearch
 
             searchFNBtn.Enabled = false;
             SetFormState();
+
         }
 
         private void ProcesssingComplete(object sender, RunWorkerCompletedEventArgs e)
@@ -172,6 +173,7 @@ namespace FiveDFileNumberSearch
             showFileNumbersBtn.Enabled = dbLoaded;
             fileNumberTB.Enabled = dbLoaded;
             exportDatabaseToolStripMenuItem.Enabled = dbLoaded;
+            uploadToGoogleDriveToolStripMenuItem.Enabled = dbLoaded;
         }
 
         private void chooseInputFile_Click(object sender, EventArgs e)
@@ -332,6 +334,15 @@ namespace FiveDFileNumberSearch
         string ReplaceNewlines(string blockOfText, string replaceWith)
         {
             return blockOfText.Replace("\r\n", replaceWith).Replace("\n", replaceWith).Replace("\r", replaceWith);
+        }
+
+        private void uploadToGoogleDriveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            richTextBox1.Clear();
+            PrintInfo($"Uploading {_dbPath} to Google Drive...");
+            var gdh = new GoogleDriveHelper();
+            gdh.UpdateStoredFile(_dbPath,"5DFileData");
+            PrintInfo("Done.");
         }
     }
 

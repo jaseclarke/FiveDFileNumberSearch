@@ -15,8 +15,11 @@ namespace FiveDFileNumberSearchCmd
         [Option("db", Required = true)]
         public string DatabasePath { get; set; }
 
-        [Option('q',"quiet", Required = false, DefaultValue = false)]
+        [Option('q', "quiet", Required = false, DefaultValue = false)]
         public bool Quiet { get; set; }
+
+        [Option('u', "upload", Required = false, DefaultValue = false, HelpText="Uploads the database to Google Drive if true.")]
+        public bool Upload { get; set; }
 
         [HelpOption]
         public string GetUsage()
@@ -29,6 +32,7 @@ namespace FiveDFileNumberSearchCmd
     {
         private static DatabaseHelper _dbHelper;
         private static bool _silent = false;
+        private static bool _upload = false;
         static void Main(string[] args)
         {
             var options = new CommandLineOptions();
@@ -41,7 +45,16 @@ namespace FiveDFileNumberSearchCmd
                 }
                 _silent = options.Quiet;
                 _dbHelper = new DatabaseHelper(options.DatabasePath);
+                _upload = options.Upload;
                 UpdateDatabase();
+
+                if (_upload)
+                {
+                    Console.Write($"Uploading Database File to Google Drive...");
+                    var gdHelper = new GoogleDriveHelper();
+                    gdHelper.UpdateStoredFile(options.DatabasePath,"5DFileData");
+                    Console.WriteLine($"Done");
+                }
             }
         }
 
