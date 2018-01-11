@@ -37,12 +37,14 @@ namespace FiveDFileNumberSearchLib
             return isNetworkPath;
         }
 
-        public List<string> ChangedFiles(DatabaseHelper dbHelper)
+        public Tuple<List<string>,List<string>> ChangedFiles(DatabaseHelper dbHelper)
         {
             var changedFiles = new List<string>();
             var modelData = dbHelper.GetAllModelDataRecords();
 
-            foreach (var file in FindAllFiveDFiles())
+            var allFiveDFiles = FindAllFiveDFiles();
+
+            foreach (var file in allFiveDFiles)
             {
                 var foundModelData = modelData.FirstOrDefault(md => md.ModelPath == file);
 
@@ -59,7 +61,17 @@ namespace FiveDFileNumberSearchLib
                 }
             }
 
-            return changedFiles;
+            var deletedFiles = new List<string>();
+
+            foreach (var md in modelData)
+            {
+                if (!allFiveDFiles.Contains(md.ModelPath))
+                {
+                    deletedFiles.Add(md.ModelPath);
+                }
+            }
+
+            return new Tuple<List<string>,List<string>>(changedFiles,deletedFiles);
         }
     }
 }

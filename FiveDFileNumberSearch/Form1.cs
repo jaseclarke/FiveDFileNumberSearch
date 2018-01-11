@@ -78,7 +78,11 @@ namespace FiveDFileNumberSearch
         {
             FiveDFileHelper helper = new FiveDFileHelper(_dbHelper.GetRootFolder());
 
-            var changedFiles = helper.ChangedFiles(_dbHelper);
+            var changes = helper.ChangedFiles(_dbHelper);
+
+            var changedFiles = changes.Item1;
+            var deletedFiles = changes.Item2;
+
             if (changedFiles.Count > 0)
             {
                 foreach (var fiveDFile in changedFiles)
@@ -107,7 +111,15 @@ namespace FiveDFileNumberSearch
                     }
                 }
             }
-            else
+            if (deletedFiles.Count > 0)
+            {
+                foreach (var fiveDFile in deletedFiles)
+                {
+                    PrintInfo($"Deleted File: {fiveDFile}.");
+                    _dbHelper.DeleteModel(fiveDFile);
+                }
+            }
+            if (changedFiles.Count == 0 && deletedFiles.Count == 0)
             {
                 PrintInfo("No Changes Found.");
             }

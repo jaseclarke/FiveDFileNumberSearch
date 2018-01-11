@@ -110,7 +110,7 @@ namespace FiveDFileNumberSearchLib
         }
 
 
-        public ModelRecord GetModelByPath(ModelInfo info)
+        public ModelRecord GetModelByPath(string modelPath)
         {
             ModelRecord record = null;
             using (var conn = new SQLiteConnection(ConnectionString,true))
@@ -121,7 +121,7 @@ namespace FiveDFileNumberSearchLib
                 {
                     cmd.CommandText = "SELECT * FROM [Models] WHERE [FilePath]=$path";
 
-                    cmd.Parameters.AddWithValue("$path", info.ModelPath);
+                    cmd.Parameters.AddWithValue("$path", modelPath);
 
                     using (var rdr = cmd.ExecuteReader())
                     {
@@ -258,15 +258,41 @@ namespace FiveDFileNumberSearchLib
 
         public void UpdateModel(ModelInfo info, FieldParser parser)
         {
-            var existingModelRecord = GetModelByPath(info);
+            var existingModelRecord = GetModelByPath(info.ModelPath);
             if (existingModelRecord != null)
             {
                 ClearModelData(existingModelRecord.ID);
             }
             UpdateModelTable(info);
-            var newModelRecord = GetModelByPath(info);
+            var newModelRecord = GetModelByPath(info.ModelPath);
             AddWellData(newModelRecord, parser);
             SetLastUpdatedTime();
+        }
+
+        public void DeleteModel(string modelPath)
+        {
+            var existingModelRecord = GetModelByPath(modelPath);
+            if (existingModelRecord == null) return;
+
+            ClearModelData(existingModelRecord.ID);
+
+            using (var conn = new SQLiteConnection(ConnectionString, true))
+            {
+                conn.Open();
+
+                using (var txn = conn.BeginTransaction())
+                {
+                    using (var cmd = new SQLiteCommand(conn))
+                    {
+                        cmd.Transaction = txn;
+                        cmd.CommandText = "DELETE FROM [Models] WHERE [ID] = $modelID";
+                        cmd.Parameters.AddWithValue("$modelID", existingModelRecord.ID);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    txn.Commit();
+                }
+            }
         }
 
         private void ClearModelData(int modelID)
